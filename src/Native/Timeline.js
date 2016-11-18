@@ -12,6 +12,8 @@ function toHtml(factList, skipChildren) {
 function emptyModel() {
 	return {
 		shared: null,
+		items: null,
+		groups: null,
 		options: { },
 	};
 }
@@ -21,7 +23,16 @@ function extractModel(factList) {
 	var current = factList;
 	while (current.ctor != "[]") {
 		var payload = current._0;
-		model.options[payload.key] = payload.value;
+		switch (payload.key) {
+			case "__items__":
+				model.items = payload.value;
+				break;
+			case "groups":
+				model.groups = payload.value;
+				break;
+			default:
+				model.options[payload.key] = payload.value;
+		}
 		current = current._1;
 	}
 	return model;
@@ -75,13 +86,24 @@ function diff(prev, next) {
 	var nm = next.model;
 	var shared = pm.shared;
 	if (shared != null) {
+		var instance = shared.instance;
+		if (instance != null) {
+			if (nm.items != null) {
+				instance.setItems(nm.items);
+			}
+		}
 	}
 	nm.shared = shared;
     return null;
 }
 
+function packDate(date) {
+	return date;
+}
+
 return {
 	toHtml: F2(toHtml),
+	packDate: packDate,
 };
 
 }();
